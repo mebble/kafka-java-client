@@ -1,1 +1,1 @@
-# kafka-java-clients-api
+# kafka-java-client

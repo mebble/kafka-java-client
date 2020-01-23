@@ -36,14 +36,21 @@ public class MyConsumer implements Runnable {
     @Override
     public void run() {
         System.out.printf("Running kafka consumer %d...\n", this.consumerId);
-        while (true) {
-            System.out.printf("consumer %d polling...\n", this.consumerId);
-            ConsumerRecords<String, String> records = this.consumer.poll(Duration.ofMillis(1000));
-            for (ConsumerRecord<String, String> record : records) {
-                System.out.printf("----- %d received: -----\n", this.consumerId);
-                System.out.printf("key: %s,\tvalue: %s,\tpartition: %d,\toffset: %d\n", record.key(), record.value(), record.partition(), record.offset());
+        try {
+            while (true) {
+                System.out.printf("consumer %d polling...\n", this.consumerId);
+                ConsumerRecords<String, String> records = this.consumer.poll(Duration.ofMillis(1000));
+                for (ConsumerRecord<String, String> record : records) {
+                    System.out.printf("----- %d received: -----\n", this.consumerId);
+                    System.out.printf("key: %s,\tvalue: %s,\tpartition: %d,\toffset: %d\n", record.key(), record.value(), record.partition(), record.offset());
+                }
+                this.consumer.commitAsync();
             }
-            this.consumer.commitAsync();
+        } catch (WakeupException e) {
+            System.out.printf("WakeupException caught in consumer %d:\n" + e.getMessage(), this.consumerId);
+        } finally {
+            this.consumer.close();
+            System.out.printf("Closed consumer %d\n", this.consumerId);
         }
     }
 }

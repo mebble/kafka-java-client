@@ -4,8 +4,8 @@ public class Main {
     public static void main(String[] args) throws java.io.IOException {
         String resourcesPath = System.getProperty("user.dir") + "/src/main/resources/";
 
-        MyConsumer consumer1 = new MyConsumer(resourcesPath + "consumer1.properties");
-        MyConsumer consumer2 = new MyConsumer(resourcesPath + "consumer2.properties");
+        MyConsumer consumer1 = new MyConsumer(resourcesPath + "consumer0.properties");
+        MyConsumer consumer2 = new MyConsumer(resourcesPath + "consumer1.properties");
 
         consumer1.subscribe(new String[] { "test-topic" });
         consumer2.subscribe(new String[] { "test-topic" });
