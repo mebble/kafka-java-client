@@ -6,15 +6,31 @@
 - Gradle 6
 - Kafka 2.4.0
 
-## Setup
-
-Download the Kafka 2.4.0 tarball (download [here](https://www.apache.org/dyn/closer.cgi?path=/kafka/2.4.0/kafka_2.12-2.4.0.tgz)) and extract it. Then place its `bin/` directory in the `$PATH` environment variable to expose the ZooKeeper and Kafka scripts that are used in the instructions below. Alternatively, you can write down the absolute path to these scripts if you don't wanna pollute your `$PATH`.
+## Architecture
 
 This project consists of:
 
 - A cluster of three Kafka brokers
 - One consumer group, consisting of two Kafka consumers
 - One Kafka console producer
+
+A topic is a message log that's split into `P` partitions, each partition having `N` replicas. Each message in the log is identified by an offset. Messages are appended to these partitions by a producer. The producer decides to which partition it will send each new message [src]. A consumer group is a group of consumer processes that subscribes to one or more topics. Each member of the group gets exclusive access to a fair share of the partitions of the topic [src]. But by ensuring that for every partition, there exists a consumer listening to it, the consumer group as a whole can access the messages from all partitions of the topic.
+
+When a consumer of a group is closed or crashes, the consumer group (through its co-ordinator) will reassign the partitions to the remaining consumers of that group. This is called re-balancing.
+
+To keep track of which messages of the topic have been read, each consumer stores the log offset of the latest message that it has read through an "offset commit". This can either be done manually through the Java client API or configured to be done automatically after a fixed interval of time. There are pros and cons to both methods [src] although a manual commit is preferred [src].
+
+![Architecture](docs/images/architecture.png)
+
+Each partition of a topic is duplicated into `N` replicas. These replicas are distributed such that no two replicas reside on the same broker. That means there must be at least `N` brokers in the cluster. For each partition, one replica is chosen as the leader and the others, as followers. All reads and writes are performed on the leader and the followers keep in sync with the leader. At any given moment, for a given partition, the subset of followers that are in sync with the leader are called the "in-sync replicas" (ISR). A broker may house a leader replica of one partition and a follower replica of another partition.
+
+![Locations of Replicas](docs/images/replica-location.png)
+
+## Setup
+
+Download the Kafka 2.4.0 tarball (download [here](https://www.apache.org/dyn/closer.cgi?path=/kafka/2.4.0/kafka_2.12-2.4.0.tgz)) and extract it. Then place its `bin/` directory in the `$PATH` environment variable to expose the ZooKeeper and Kafka scripts that are used in the instructions below. Alternatively, you can write down the absolute path to these scripts if you don't wanna pollute your `$PATH`.
+
+
 
 All of these are configured in the project's `src/main/resources/*.properties` files.
 
